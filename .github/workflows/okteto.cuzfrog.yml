@@ -2,10 +2,10 @@ name: Okteto cuzfrog
 on:
   push:
     branches: [ master ]
-    paths: ['okteto/cuzfrog/**']
+    paths: ['okteto/cuzfrog/**', '.github/workflows/okteto.cuzfrog.*']
   pull_request:
     branches: [ master ]
-    paths: ['okteto/cuzfrog/**']
+    paths: ['okteto/cuzfrog/**', '.github/workflows/okteto.cuzfrog.*']
 
 jobs:
 
@@ -21,9 +21,9 @@ jobs:
           files: 'okteto/cuzfrog/**/*.yml'
       - name: DryRun Apply
         uses: cuzfrog/setup-kubectl@v1
+        if: ${{ steps.changed-files.outputs.any_changed }}
         with:
           config: ${{ secrets.OKTETO_KUBE_CONFIG_DATA }}
-          version: ${{ secrets.OKTETO_KUBECTL_VERSION }}
           run: |
             for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
               kubectl --dry-run=client apply -f "$file"
@@ -42,13 +42,18 @@ jobs:
 
       - name: Apply changed manifest
         uses: cuzfrog/setup-kubectl@v1
+        if: ${{ steps.changed-files.outputs.any_changed }}
         with:
           config: ${{ secrets.OKTETO_KUBE_CONFIG_DATA }}
-          version: ${{ secrets.OKTETO_KUBECTL_VERSION }}
           run: |
             files=""
             for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
               files="$files -f $file"
             done
-            echo "kubectl apply $file"
-            kubectl apply "$files"
+            if [ -z "$files" ]; then
+              echo "Skip appliying as no manifest changes detected."
+            else
+              echo "kubectl apply $file"
+              kubectl apply $files
+            fi
+
