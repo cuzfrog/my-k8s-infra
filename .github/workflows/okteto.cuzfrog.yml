@@ -35,10 +35,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Get changed files
-          id: changed-files
-          uses: tj-actions/changed-files@v21
-          with:
-            files: 'okteto/cuzfrog/**/*.yml'
+        id: changed-files
+        uses: tj-actions/changed-files@v21
+        with:
+          files: 'okteto/cuzfrog/**/*.yml'
 
       - name: Apply changed manifest
         uses: cuzfrog/setup-kubectl@v1
