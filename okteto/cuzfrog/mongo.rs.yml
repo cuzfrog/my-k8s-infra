@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: database
+          image: mongo:focal
+          resources:
+            requests:
+              cpu: 1
+              memory: 1Gi
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo
+                  key: rootusername
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo
+                  key: rootpassword
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: database
+              mountPath: "/data/db"
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: mongo-pvc

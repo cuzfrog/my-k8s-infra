@@ -1,0 +1,54 @@
+name: Okteto cuzfrog
+on:
+  push:
+    branches: [ master ]
+    paths: ['okteto/cuzfrog/**']
+  pull_request:
+    branches: [ master ]
+    paths: ['okteto/cuzfrog/**']
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v21
+        with:
+          files: 'okteto/cuzfrog/**/*.yml'
+      - name: DryRun Apply
+        uses: cuzfrog/setup-kubectl@v1
+        with:
+          config: ${{ secrets.OKTETO_KUBE_CONFIG_DATA }}
+          version: ${{ secrets.OKTETO_KUBECTL_VERSION }}
+          run: |
+            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+              kubectl --dry-run=client apply -f "$file"
+            done
+
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get changed files
+          id: changed-files
+          uses: tj-actions/changed-files@v21
+          with:
+            files: 'okteto/cuzfrog/**/*.yml'
+
+      - name: Apply changed manifest
+        uses: cuzfrog/setup-kubectl@v1
+        with:
+          config: ${{ secrets.OKTETO_KUBE_CONFIG_DATA }}
+          version: ${{ secrets.OKTETO_KUBECTL_VERSION }}
+          run: |
+            files=""
+            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+              files="$files -f $file"
+            done
+            echo "kubectl apply $file"
+            kubectl apply "$files"
