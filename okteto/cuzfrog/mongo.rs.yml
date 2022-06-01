@@ -18,9 +18,9 @@ spec:
         - name: database
           image: mongo:focal
           resources:
-            requests:
+            limits:
               cpu: 1
-              memory: 1Gi
+              memory: 512Mi
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
