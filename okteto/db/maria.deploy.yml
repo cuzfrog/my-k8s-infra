@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: database
-          image: maria:jammy
+          image: mariadb:jammy
           resources:
             limits:
               cpu: 1000m

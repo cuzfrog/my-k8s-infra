@@ -4,4 +4,4 @@
 .vs/
 .settings/
 
-*-secret.yml
+*.secret.yml
