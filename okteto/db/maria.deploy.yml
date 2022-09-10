@@ -2,50 +2,45 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: db-cuzfrog
-  name: mongo
+  name: maria
   labels:
-    app: mongo
+    app: maria
 spec:
   replicas: 1
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      app: mongo
+      app: maria
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: mongo
+        app: maria
     spec:
       containers:
         - name: database
-          image: mongo:focal
+          image: maria:jammy
           resources:
             limits:
               cpu: 1000m
-              memory: 512Mi
+              memory: 1Gi
           env:
-            - name: MONGO_INITDB_ROOT_USERNAME
+            - name: MARIA_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secret
-                  key: MONGO_INITDB_ROOT_USERNAME
-            - name: MONGO_INITDB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-secret
-                  key: MONGO_INITDB_ROOT_PASSWORD
+                  key: MARIA_ROOT_PASSWORD
           livenessProbe:
             tcpSocket:
-              port: 27017
+              port: 3306
           ports:
-            - containerPort: 27017
+            - containerPort: 3306
           volumeMounts:
             - name: database
-              mountPath: "/data/db"
+              mountPath: /var/lib/mysql
       volumes:
         - name: database
           persistentVolumeClaim:
-            claimName: mongo-pvc
+            claimName: maria-pvc
 
