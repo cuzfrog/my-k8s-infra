@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: db-cuzfrog
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: mongo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: database
+          image: mongo:focal
+          resources:
+            limits:
+              cpu: 1
+              memory: 512Mi
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo
+                  key: rootusername
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo
+                  key: rootpassword
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: database
+              mountPath: "/data/db"
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+

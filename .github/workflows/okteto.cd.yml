@@ -1,11 +1,11 @@
-name: Okteto cuzfrog
+name: Okteto
 on:
   push:
     branches: [ master ]
-    paths: ['okteto/cuzfrog/**', '.github/workflows/okteto.cuzfrog.*']
+    paths: ['okteto/**', '.github/workflows/*']
   pull_request:
     branches: [ master ]
-    paths: ['okteto/cuzfrog/**', '.github/workflows/okteto.cuzfrog.*']
+    paths: ['okteto/**', '.github/workflows/*']
 
 jobs:
 
@@ -18,7 +18,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v21
         with:
-          files: 'okteto/cuzfrog/**/*.yml'
+          files: 'okteto/**/*.yml'
       - name: DryRun Apply
         uses: cuzfrog/setup-kubectl@v1
         if: ${{ steps.changed-files.outputs.any_changed }}
@@ -38,7 +38,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v21
         with:
-          files: 'okteto/cuzfrog/**/*.yml'
+          files: 'okteto/**/*.yml'
 
       - name: Apply changed manifest
         uses: cuzfrog/setup-kubectl@v1
