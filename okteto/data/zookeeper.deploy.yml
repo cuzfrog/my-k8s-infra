@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: data-cuzfrog
+  name: zookeeper
+  labels:
+    app: zookeeper
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: zookeeper
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      initContainers:
+        - name: init-wait-for-db
+          image: alpine
+          command:
+            - /bin/sh
+            - -c
+            - chown 1001:1001 /bitnami/zookeeper
+          volumeMounts:
+            - name: database
+              mountPath: /bitnami/zookeeper
+      containers:
+        - name: database
+          image: bitnami/zookeeper:3.8
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+          livenessProbe:
+            tcpSocket:
+              port: 2181
+          ports:
+            - containerPort: 2181
+          volumeMounts:
+            - name: database
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc
+

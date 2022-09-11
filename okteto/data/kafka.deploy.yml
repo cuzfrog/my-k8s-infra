@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: data-cuzfrog
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: kafka
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      initContainers:
+        - name: init-wait-for-db
+          image: alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              "for i in $(seq 1 300); do nc -zvw1 zookeeper 2181 && exit 0 || sleep 3; done; exit 1"
+              chown 1001:1001 /bitnami/kafka
+          volumeMounts:
+            - name: database
+              mountPath: /bitnami/kafka
+      containers:
+        - name: database
+          image: bitnami/kafka:3.2.0
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          env:
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+              value: zookeeper:2181
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+          livenessProbe:
+            tcpSocket:
+              port: 9092
+          ports:
+            - containerPort: 9092
+          volumeMounts:
+            - name: database
+              mountPath: /bitnami/kafka
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: kafka-pvc
+

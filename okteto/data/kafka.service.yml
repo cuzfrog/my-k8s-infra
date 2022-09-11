@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo
+  namespace: data-cuzfrog
+  name: kafka
 spec:
   ports:
-    - port: 27017
+    - port: 9092
       protocol: TCP
   selector:
-    app: mongo
+    app: kafka
 
